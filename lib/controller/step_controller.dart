@@ -1,46 +1,50 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:steps_app/env/env.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:steps_app/screen/home_screen.dart';
 
 class StepServiceController extends ChangeNotifier {
   int steps = 0;
-  String stepStatus = '初期値';
+  String? stepStatus;
 
   StreamSubscription<StepCount>? _stepSubscription;
   StreamSubscription<PedestrianStatus>? _stepStatusSubscription;
 
-  // ---------- 権限許可リクエスト ----------
-  Future<void> isPermissionGranted() async {
-    final status = await Permission.activityRecognition.status;
-    // ----- 許可されている場合 -----
-    if (status.isGranted || status.isLimited) {
-      start();
-    } else {
-      // ----- 許可されていない場合 ----- (⚠️未記入)
-      null;
-    }
+  // ---------- 権限確認 ----------
+  Future<bool> isPermissionGranted() async {
+    return Permission.activityRecognition.isGranted;
   }
 
-  void start() {
-    // ----------- 歩数取得 ------------
-    Stream<StepCount> stepStream = Pedometer.stepCountStream;
-    _stepSubscription = stepStream.listen((event) {
-      steps = event.steps;
-      notifyListeners();
-    });
+  // ---------- 権限確認のダイアログを出すメソッド ----------
+  Future<void> request() async {
+    await Permission.activityRecognition.request();
+  }
 
-    // ----------- 歩行状態取得 ----------
-    Stream<PedestrianStatus> stepStatusStream =
-        Pedometer.pedestrianStatusStream;
-    _stepStatusSubscription = stepStatusStream.listen((event) {
-      stepStatus = event.status;
+  Future<void> start() async {
+    final status = await isPermissionGranted();
+    // ---------- 許可されていない時 -----------
+    if (!status) {
+      stepStatus = '拒否';
       notifyListeners();
-    });
+    } else {
+      // ---------- 許可されているとき ----------
+      stepStatus = '初期値';
+      notifyListeners();
+      // ----- 歩数取得 -----
+      Stream<StepCount> stepStream = Pedometer.stepCountStream;
+      _stepSubscription = stepStream.listen((event) {
+        steps = event.steps;
+        notifyListeners();
+      });
+      // ----- 歩行状態取得 -----
+      Stream<PedestrianStatus> stepStatusStream =
+          Pedometer.pedestrianStatusStream;
+      _stepStatusSubscription = stepStatusStream.listen((event) {
+        stepStatus = event.status;
+        notifyListeners();
+      });
+    }
   }
 
   @override
