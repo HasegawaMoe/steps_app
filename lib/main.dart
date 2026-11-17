@@ -13,7 +13,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '歩数アプリ',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.green)),
+      theme: ThemeData(
+        colorScheme: .fromSeed(seedColor: Colors.green),
+        // textTheme: TextTheme(bodyMedium: TextStyle(color: Color.fromRGBO(70, 75, 70, 1)))
+        ),
       home: const MainScreen(),
     );
   }

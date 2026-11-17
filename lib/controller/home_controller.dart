@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class StepServiceController extends ChangeNotifier {
+class HomeController extends ChangeNotifier {
   int steps = 0;
   String? stepStatus;
 
@@ -45,6 +45,16 @@ class StepServiceController extends ChangeNotifier {
         notifyListeners();
       });
     }
+  }
+
+    // ---------- 端末に保存されている目標歩数を取得するメソッド ----------
+  Future<int?> getting() async {
+    final prefs = await SharedPreferences.getInstance();
+    final fromPrefs = prefs.getInt('goal');
+    if(fromPrefs != null){
+      return fromPrefs;
+    }
+    return null;
   }
 
   @override

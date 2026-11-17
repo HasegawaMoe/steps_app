@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:steps_app/env/env.dart';
-import 'package:steps_app/controller/step_controller.dart';
+import 'package:steps_app/controller/home_controller.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:steps_app/screen/setting_goal_screen.dart';
 
-final headers = {
-  'Authorization': 'Bearer ${Env.notionToken}',
-  'Notion-Version': '2026-03-11',
-  'Content-Type': 'application/json',
-};
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -18,15 +13,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  final stepController = StepServiceController();
+  final stepController = HomeController();
   int stepGoal = 10000;
 
   @override
   void initState() {
     super.initState();
+    newStepGoal();
     getResult();
   }
 
+  // ---------- コントローラーから権限情報を受け取る ----------
   Future<void> getResult() async {
     bool result = await stepController.isPermissionGranted();
     if (result) {
@@ -78,6 +75,14 @@ class HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title, style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            onPressed: () {
+              movePage();
+            },
+            icon: Icon(Icons.settings, color: Colors.white),
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -169,5 +174,25 @@ class HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+
+  // ---------- 目標歩数設定画面との遷移メソッド ----------
+  void movePage() async{
+    final popNotion = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => SettingGoalScreen(stepGoal: stepGoal))
+    );
+    if (popNotion != null){
+      setState(() {
+        stepGoal = popNotion;
+      });
+    }
+  }
+
+  Future<void> newStepGoal() async{
+    final savedStepGoal = await stepController.getting();
+    if (savedStepGoal != null) {
+      stepGoal = savedStepGoal;
+    }
   }
 }
