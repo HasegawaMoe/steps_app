@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:steps_app/controller/home_controller.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:steps_app/screen/setting_goal_screen.dart';
-
+import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -64,12 +64,6 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    stepController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -121,6 +115,17 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  DetailScreen(steps: stepController.steps, stepGoal: stepGoal),
+            ),
+          );
+        },
+        child: Icon(Icons.edit),
       ),
     );
   }
@@ -176,23 +181,30 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
   // ---------- 目標歩数設定画面との遷移メソッド ----------
-  void movePage() async{
+  void movePage() async {
     final popNotion = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => SettingGoalScreen(stepGoal: stepGoal))
+      MaterialPageRoute(
+        builder: (context) => SettingGoalScreen(stepGoal: stepGoal),
+      ),
     );
-    if (popNotion != null){
+    if (popNotion != null) {
       setState(() {
         stepGoal = popNotion;
       });
     }
   }
 
-  Future<void> newStepGoal() async{
+  Future<void> newStepGoal() async {
     final savedStepGoal = await stepController.getting();
     if (savedStepGoal != null) {
       stepGoal = savedStepGoal;
     }
+  }
+
+  @override
+  void dispose() {
+    stepController.dispose();
+    super.dispose();
   }
 }

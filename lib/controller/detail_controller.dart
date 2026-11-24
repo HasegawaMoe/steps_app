@@ -1,28 +1,38 @@
-import 'package:steps_app/env/env.dart';
-import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:steps_app/domain/record_model.dart';
+import 'package:steps_app/data/notion_api_client.dart';
 
 class DetailController {
+  final NotionApiClient notionApiClient= NotionApiClient(); 
 
-  final headers = {
-  'Authorization': 'Bearer ${Env.notionToken}',
-  'Notion-Version': '2026-03-11',
-  'Content-Type': 'application/json',
-};
+  Future<int> save(int steps, int stepGoal, String memo) async{
 
-  // final postData = {
-  // "parent": {"database_id":"3f331cb5-c9cd-80e9-82a5-ff6f406395c3"},
-  // "properties":
-  // };
+    // ----- 日時を取得 -----
+    DateTime now = DateTime.now();
+    final myFormat = DateFormat('yyyy/MM/dd HH:mm:ss');
+    //  ----- 取得した日時を使いたいフォーマット（String型）に変換 -----
+    final String dateTime = myFormat.format(now);
 
-  // Future<void> postData() async {
-  //   final response = await http.post(
-  //     Uri.parse('/v1/data_sources/{data_source_id}/query'),
-  //     headers: headers,
-  //     body: {
+    // ----- 目標達成しているかチェック -----
+     bool isGoalAchieved = false;
+    if (steps >= stepGoal) {
+      isGoalAchieved = true;
+    } else if (steps < stepGoal) {
+      isGoalAchieved = false;
+    }
 
+    // ----- 値を入れたモデルを作成 -----
+    final RecordModel record = RecordModel(
+      steps: steps,
+      stepGoal: stepGoal,
+      isGoalAchieved: isGoalAchieved,
+      dateTime: dateTime,
+      memo: memo,
+    );
 
-  //     }
-
-  //   );
-  // }
+    final int responseStatusCode = await notionApiClient.createRecord(record);
+    // await Future.delayed(Duration(seconds: 1)); //🌟確認用
+    return responseStatusCode;
+      // return 1;　//🌟確認用
+  }
 }

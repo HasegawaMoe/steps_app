@@ -93,4 +93,10 @@ class SettingGoalScreenStatus extends State<SettingGoalScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('goal', goal!);
   }
+
+  @override
+  void dispose() {
+    goalController.dispose();
+    super.dispose();
+  }
 }
